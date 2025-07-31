@@ -179,3 +179,5 @@ Now you can use the installed package in any Python script, from any directory.
 ```bash
 python3 main.py
 ```
+
+Warning: Parts of this code were generated using Gemini 2.5 Pro.
