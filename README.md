@@ -46,41 +46,41 @@ brew install just
 Follow the installation instructions in the [official `just` repository](https://github.com/casey/just).
 
 ### 2. Common Commands
-
 Run these from the project's root directory.
 
 - **List all available commands:**
-
   ```bash
   just --list
   ```
-
 - **Build all C/C++ components:**
-
   ```bash
   just build
   ```
-
 - **Prepare the entire project for Python packaging (builds C++ and generates stubs):**
-
   ```bash
   just prepare-python
   ```
-
 - **Run the C++ demo:**
-
   ```bash
   just test-cpp
   ```
-
 - **Run the Python demo (after `pip install .`):**
-
   ```bash
   just test-py
   ```
-
-- **Clean up all generated files and directories:**
-
+- **Install C++ libraries to the system (e.g., /usr/local):**
+  ```bash
+  just install-cpp
+  ```
+- **Uninstall C++ libraries from the system:**
+  ```bash
+  just uninstall-cpp
+  ```
+- **Uninstall the Python package from your Python environment:**
+  ```bash
+  just uninstall-py
+  ```
+- **Clean up all local generated files and directories:**
   ```bash
   just clean
   ```

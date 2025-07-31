@@ -9,6 +9,7 @@ BUILD_DIR      := "build"
 STUB_FILE      := "src/my_c_wrapper/stubs.py"
 PYTHON_LIB_DIR := "src/my_c_wrapper/lib"
 PYTHON_EXE     := "python3"
+PACKAGE_NAME   := "my_c_wrapper"
 
 # --- Default Recipe ---
 # The default recipe runs when you execute `just` with no arguments.
@@ -45,11 +46,21 @@ test-py:
     @{{PYTHON_EXE}} main.py
 
 # [Workflow 1] Install the C++ libraries and headers system-wide.
-# This recipe requires sudo permissions.
 install-cpp: build
     @echo "--- Installing C++ libraries and headers (requires sudo)... ---"
     @sudo cmake --install {{BUILD_DIR}}
     @echo "Installation complete."
+
+# [Workflow 1] Uninstall the C++ libraries and headers from the system.
+uninstall-cpp:
+    @echo "--- Uninstalling C++ components from system (requires sudo)... ---"
+    @if [ -f {{BUILD_DIR}}/install_manifest.txt ]; then \
+        xargs sudo rm -f < {{BUILD_DIR}}/install_manifest.txt; \
+        echo "C++ uninstall complete."; \
+    else \
+        echo "Error: '{{BUILD_DIR}}/install_manifest.txt' not found."; \
+        echo "Cannot uninstall. Please run 'just build' and 'just install-cpp' first."; \
+    fi
 
 # [Workflow 2] Prepare the project for Python packaging.
 # This is a convenient alias that runs the necessary build steps.
@@ -57,9 +68,14 @@ prepare-python: stubs
     @echo "\nPython package is ready."
     @echo "To install, run: pip install ."
 
+# [Workflow 2] Uninstall the Python package.
+uninstall-py:
+    @echo "--- Uninstalling Python package '{{PACKAGE_NAME}}'... ---"
+    @{{PYTHON_EXE}} -m pip uninstall -y {{PACKAGE_NAME}}
+
 # --- Cleanup ---
 
-# Remove all generated files and build artifacts.
+# Remove all generated files and build artifacts from the local directory.
 clean:
     @echo "--- Cleaning project... ---"
     @rm -rf {{BUILD_DIR}}
