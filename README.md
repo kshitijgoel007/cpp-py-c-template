@@ -89,7 +89,7 @@ Run these from the project's root directory.
 
 ## Manual Workflow 1: Using the C++ Layer
 
-This workflow builds and installs the C and C++ libraries to a standard system location (e.g., `/usr/local`) so other C++ projects can find and link against them.
+This workflow builds and installs the C and C++ libraries so other C++ projects can find and link against them.
 
 ### 1. Prerequisites
 
@@ -113,8 +113,7 @@ cmake --build build
 # please refer to CMake docs.
 sudo cmake --install build
 ```
-
-After this, `libc_lib.so`, `libcpp_wrapper.a`, and the headers in `include/my_project/` will be available for other C++ projects to consume.
+This installs the shared library `libc_lib.so`, the static library `libcpp_wrapper.a`, and places the public headers into a namespaced directory (e.g., `/usr/local/include/my_project/`) for other C++ projects to consume.
 
 ---
 
