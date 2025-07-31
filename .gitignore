@@ -1,0 +1,61 @@
+# ==============================================================================
+# Build artifacts
+# ==============================================================================
+# General build directory
+build/
+[Bb]uild/
+
+# CMake specific files
+[Cc]make*/
+CMakeCache.txt
+*.cmake
+
+# Python Packaging artifacts
+dist/
+*.egg-info/
+
+# ==============================================================================
+# Compiled files and libraries
+# ==============================================================================
+# C/C++ object files
+*.o
+*.obj
+
+# Libraries
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+
+# ==============================================================================
+# Python specific
+# ==============================================================================
+# Byte-compiled / optimized files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environments
+venv/
+.venv/
+env/
+.env
+
+# ==============================================================================
+# Project-specific generated files
+# ==============================================================================
+# Auto-generated stubs from ctypesgen
+src/my_c_wrapper/stubs.py
+
+# ==============================================================================
+# OS and IDE files
+# ==============================================================================
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# IDE configuration
+.vscode/
+.idea/

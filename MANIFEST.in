@@ -1,0 +1,2 @@
+# Recursively include all files in the src/my_c_wrapper/lib directory.
+graft src/my_c_wrapper/lib
