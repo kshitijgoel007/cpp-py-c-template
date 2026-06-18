@@ -60,14 +60,14 @@ format: env
 coverage: env bindings
     cmake --preset coverage
     cmake --build --preset coverage
-    ctest --preset coverage
+    ctest --preset coverage --exclude-regex cmake_consumer
     PYTHONPATH=src {{ python }} -m pytest --cov --cov-report=term-missing --cov-report=xml
 
 # Run the sanitizer-enabled native suite.
 sanitize:
     cmake --preset asan
     cmake --build --preset asan
-    ctest --preset asan
+    ctest --preset asan --exclude-regex cmake_consumer
 
 # Build a platform-tagged Python wheel in dist/.
 wheel: env

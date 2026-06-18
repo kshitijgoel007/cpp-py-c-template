@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(MyProject VERSION 0.3.0 LANGUAGES C CXX)
+project(MyProject VERSION 0.3.1 LANGUAGES C CXX)
 
 include(CTest)
 include(FetchContent)

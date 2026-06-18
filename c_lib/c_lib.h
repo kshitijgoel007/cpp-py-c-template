@@ -17,8 +17,8 @@
 
 #define C_CORE_VERSION_MAJOR 0
 #define C_CORE_VERSION_MINOR 3
-#define C_CORE_VERSION_PATCH 0
-#define C_CORE_VERSION_STRING "0.3.0"
+#define C_CORE_VERSION_PATCH 1
+#define C_CORE_VERSION_STRING "0.3.1"
 #define C_CORE_ABI_VERSION 1u
 
 #ifdef __cplusplus

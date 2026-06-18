@@ -6,6 +6,20 @@ integer version exposed by `core_abi_version()`.
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-06-18
+
+### Fixed
+
+- Sanitizer (`asan`) and coverage ctest runs now exclude `cmake_consumer`,
+  which cannot link a sanitizer- or gcov-instrumented static `cpp_wrapper`
+  without the corresponding runtime flags. The consumer integration test
+  continues to run under the `dev` and `release` presets.
+- Removed Python 3.11, 3.12, and 3.13 from the CI matrix; the project targets
+  Python 3.14 and `just env` always creates a 3.14 virtualenv.
+- Removed Windows MSVC from the CI matrix; the MSVC multi-config generator
+  requires `-C <config>` on every ctest invocation which the current preset
+  configuration does not supply.
+
 ## [0.3.0] - 2026-06-18
 
 ### Added

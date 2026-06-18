@@ -6,7 +6,7 @@ from my_c_wrapper import Accumulator, abi_version, add, version
 
 
 def test_loaded_library_version_matches_package():
-    assert version() == "0.3.0"
+    assert version() == "0.3.1"
     assert abi_version() == 1
 
 
