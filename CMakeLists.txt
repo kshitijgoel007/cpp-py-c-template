@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(MyProject VERSION 2026.6.0 LANGUAGES C CXX)
+project(MyProject VERSION 2026.6.1 LANGUAGES C CXX)
 
 # ABI version is separate from the CalVer package version. Bump this only
 # when making a backwards-incompatible change to the C ABI.
