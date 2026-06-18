@@ -1,2 +1,15 @@
-# Recursively include all files in the src/my_c_wrapper/lib directory.
 graft src/my_c_wrapper/lib
+include CMakeLists.txt
+include CMakePresets.json
+include copier.yml
+include justfile
+include main.cpp
+include main.py
+include bindings/bindings.toml
+recursive-include cmake *.cmake *.in
+recursive-include c_lib *.c *.h
+recursive-include cpp_wrapper *.cpp *.h
+recursive-include docs *.md
+recursive-include tests *.py
+recursive-include tests *.c *.cpp *.txt *.in
+recursive-include tools *.py

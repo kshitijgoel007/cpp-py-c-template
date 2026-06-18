@@ -1,20 +1,95 @@
 [build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "native_build_backend.backend"
+backend-path = ["tools"]
 
 [project]
 name = "my_c_wrapper"
-version = "0.1.0"
+version = "0.3.0"
+requires-python = ">=3.11"
 description = "A minimal example of a Python wrapper over a C library."
 readme = "README.md"
 authors = [
   { name="Your Name", email="your@email.com" },
 ]
 license = { text="MIT" }
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: C",
+  "Programming Language :: C++",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+]
+
+[project.optional-dependencies]
+dev = [
+  "cibuildwheel>=3.4",
+  "commitizen>=4.0",
+  "copier>=9.4",
+  "pre-commit>=4.0",
+  "pytest>=9.0",
+  "pytest-cov>=7.0",
+  "ruff>=0.11",
+]
 
 [tool.setuptools]
-# This flag is the key. It tells setuptools to use MANIFEST.in.
 include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+my_c_wrapper = ["lib/*"]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-markers"
+testpaths = ["tests/python"]
+
+[tool.coverage.run]
+branch = true
+source = ["my_c_wrapper"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+exclude = ["src/my_c_wrapper/_ctypes.py"]
+
+[tool.ruff.lint]
+select = ["B", "C4", "E", "F", "I", "N", "PIE", "UP", "W"]
+
+[tool.cibuildwheel]
+build = "cp314-*"
+build-frontend = "build"
+test-command = "python -c \"import my_c_wrapper; assert my_c_wrapper.add(20, 22) == 42\""
+skip = "*-musllinux_*"
+
+[tool.cibuildwheel.linux]
+repair-wheel-command = "auditwheel repair -w {dest_dir} {wheel}"
+
+[tool.cibuildwheel.macos]
+repair-wheel-command = "delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}"
+
+[tool.cibuildwheel.windows]
+repair-wheel-command = "delvewheel repair -w {dest_dir} {wheel}"
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "v$version"
+version_provider = "pep621"
+update_changelog_on_bump = true
+version_files = [
+  "CMakeLists.txt:project\\(MyProject VERSION",
+  "c_lib/c_lib.h:C_CORE_VERSION_STRING",
+  "c_lib/c_lib.h:C_CORE_VERSION_MAJOR",
+  "c_lib/c_lib.h:C_CORE_VERSION_MINOR",
+  "c_lib/c_lib.h:C_CORE_VERSION_PATCH",
+]

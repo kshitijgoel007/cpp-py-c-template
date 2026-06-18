@@ -1,3 +1,9 @@
-# Expose the public API of the package.
-# Users can now do `from my_c_wrapper import add`.
-from .wrapper import add
+from ._environment import require_virtualenv
+
+require_virtualenv()
+
+from .wrapper import Accumulator, abi_version, add, version  # noqa: E402
+
+__version__ = "0.2.0"
+
+__all__ = ["Accumulator", "abi_version", "add", "version"]

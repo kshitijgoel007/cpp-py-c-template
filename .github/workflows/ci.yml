@@ -1,0 +1,116 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux GCC
+            os: ubuntu-latest
+            cc: gcc
+            cxx: g++
+          - name: Linux Clang
+            os: ubuntu-latest
+            cc: clang
+            cxx: clang++
+          - name: macOS Clang
+            os: macos-latest
+            cc: clang
+            cxx: clang++
+          - name: Windows MSVC
+            os: windows-latest
+            cc: cl
+            cxx: cl
+    runs-on: ${{ matrix.os }}
+    env:
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - uses: extractions/setup-just@v3
+      - name: Install virtualenv
+        run: pip install virtualenv
+      - name: Set up environment
+        shell: bash
+        run: just env
+      - name: Build and test
+        shell: bash
+        run: just test
+
+  python-compatibility:
+    name: Python ${{ matrix.python }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: extractions/setup-just@v3
+      - name: Install virtualenv
+        run: pip install virtualenv
+      - name: Set up environment
+        run: just env
+      - name: Build and test
+        run: just test
+
+  quality:
+    name: Quality and coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - uses: extractions/setup-just@v3
+      - name: Install virtualenv and clang-format
+        run: pip install virtualenv "clang-format==22.*"
+      - name: Set up environment
+        run: just env
+      - name: Run quality checks
+        run: just check
+      - name: Run coverage
+        run: just coverage
+      - uses: codecov/codecov-action@v5
+        with:
+          files: coverage.xml
+          fail_ci_if_error: false
+
+  sanitizers:
+    name: Sanitizers
+    runs-on: ubuntu-latest
+    env:
+      CC: clang
+      CXX: clang++
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - uses: extractions/setup-just@v3
+      - name: Install virtualenv
+        run: pip install virtualenv
+      - name: Set up environment
+        run: just env
+      - name: Run sanitizer suite
+        run: just sanitize

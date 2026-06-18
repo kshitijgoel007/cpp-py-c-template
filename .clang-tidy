@@ -1,0 +1,14 @@
+Checks: >
+  -*,
+  bugprone-*,
+  clang-analyzer-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*
+WarningsAsErrors: ''
+HeaderFilterRegex: '^(c_lib|cpp_wrapper|tests)/'
+CheckOptions:
+  - key: readability-identifier-length.IgnoredParameterNames
+    value: 'a;b'
+

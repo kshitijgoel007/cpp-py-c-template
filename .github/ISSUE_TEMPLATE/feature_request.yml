@@ -1,0 +1,27 @@
+name: Feature request
+description: Propose a focused improvement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+  - type: dropdown
+    id: layers
+    attributes:
+      label: Affected layer
+      multiple: true
+      options:
+        - C ABI
+        - C++ wrapper
+        - Python wrapper
+        - Build and packaging
+        - Agentic engineering
+

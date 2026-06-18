@@ -1,0 +1,75 @@
+_min_copier_version: "9.4"
+_exclude:
+  - .git
+  - .venv
+  - build
+  - dist
+  - __pycache__
+  - "*.egg-info"
+  - src/my_c_wrapper/_ctypes.py
+  - src/my_c_wrapper/lib
+_tasks:
+  - command:
+      - "{{ _copier_python }}"
+      - tools/customize_template.py
+      - --project-name
+      - "{{ project_name }}"
+      - --cmake-name
+      - "{{ cmake_name }}"
+      - --project-slug
+      - "{{ project_slug }}"
+      - --distribution-name
+      - "{{ distribution_name }}"
+      - --python-package
+      - "{{ python_package }}"
+      - --author-name
+      - "{{ author_name }}"
+      - --author-email
+      - "{{ author_email }}"
+    when: "{{ _copier_operation == 'copy' }}"
+
+project_name:
+  type: str
+  default: My Project
+  help: Human-readable project name.
+
+cmake_name:
+  type: str
+  default: MyProject
+  validator: >-
+    {% if not (cmake_name | regex_search('^[A-Za-z][A-Za-z0-9]+$')) %}
+    Use letters and digits, starting with a letter.
+    {% endif %}
+
+project_slug:
+  type: str
+  default: my_project
+  validator: >-
+    {% if not (project_slug | regex_search('^[a-z][a-z0-9_]+$')) %}
+    Use lowercase letters, digits, and underscores.
+    {% endif %}
+
+distribution_name:
+  type: str
+  default: my-c-wrapper
+  validator: >-
+    {% if not (distribution_name | regex_search('^[a-z][a-z0-9-]+$')) %}
+    Use lowercase letters, digits, and dashes.
+    {% endif %}
+
+python_package:
+  type: str
+  default: my_c_wrapper
+  validator: >-
+    {% if not (python_package | regex_search('^[a-z][a-z0-9_]+$')) %}
+    Use a valid lowercase Python package identifier.
+    {% endif %}
+
+author_name:
+  type: str
+  default: Your Name
+
+author_email:
+  type: str
+  default: your@email.com
+

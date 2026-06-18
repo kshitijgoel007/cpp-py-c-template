@@ -1,183 +1,165 @@
-# Template for C++ and Python Layers over a Core C Library
+# C Core with C++ and Python Layers
 
-This is a minimal, self-contained template project demonstrating how to build independent C++ and Python layers on top of a single, shared C library.
+A template for implementing functionality once in C and exposing it through
+independent C++17 and Python APIs.
 
-- The **C++ layer** provides an object-oriented C++ wrapper (`Calculator` class) for use in other C++ applications. It can be installed system-wide via standard CMake commands.
-- The **Python layer** provides a standard, installable Python package that exposes the C library's functionality directly to Python. It uses `ctypes` with auto-generated stubs for a modern IDE experience.
+```text
+              c_lib/c_lib.c — implementation + stable C ABI
+                       /                   \
+            cpp_wrapper/              generated ctypes
+               C++ API                       |
+                                       Python wrapper
+```
 
-The project has **zero runtime dependencies** and uses standard CMake and Setuptools.
+`c_lib/` owns implementation and the foreign-function interface. `cpp_wrapper/`
+adds C++ ergonomics. `src/my_c_wrapper/` adds Python ergonomics. Neither
+wrapper depends on the other.
 
-## Project Structure
+The starter API covers two common binding shapes: `add()` is a stateless
+function; `Accumulator` owns an opaque C allocation, uses RAII in C++, and
+exposes a context manager in Python that translates C status codes into
+exceptions.
 
-```txt
+## Prerequisites
+
+- CMake 3.24 or newer
+- A C11 and C++17 compiler
+- Clang, used to extract the public C API from the header
+- Python 3.11 or newer
+- `virtualenv` — all Python work runs in environments it creates
+- `just` — install with your package manager (`brew install just`, etc.)
+
+Install `virtualenv` with an OS package manager or `pipx`. Do not install it
+into the system interpreter.
+
+## Environment policy
+
+`sudo` is prohibited. Every Python command must run inside a `virtualenv`
+environment. The package enforces this at import time.
+
+Bootstrap once:
+
+```bash
+just env
+```
+
+This creates `.venv` and installs the Python dev tools inside it. All
+`just` workflows that need Python depend on `env` automatically.
+
+## Quick start
+
+```bash
+just check           # build, test, lint, ABI and policy validation
+just wheel           # build a platform-tagged wheel under dist/
+just package-smoke   # test clean editable and wheel installs
+```
+
+## Commands
+
+| Command | Purpose |
+| --- | --- |
+| `just` | List available workflows |
+| `just env` | Create `.venv` and install dev tools |
+| `just build [preset]` | Configure and build a CMake preset (`dev`, `release`, `asan`, `coverage`) |
+| `just bindings` | Extract C metadata and regenerate `_ctypes.py` |
+| `just test` | Run CTest, pytest, and both consumer demos |
+| `just check` | Full build, test, lint, ABI, and policy check |
+| `just coverage` | Build with coverage and produce an XML report |
+| `just sanitize` | Build and test with address and UB sanitizers |
+| `just wheel` | Build a platform-tagged wheel under `dist/` |
+| `just package-smoke [mode]` | Test clean installs: `all`, `editable`, or `wheel` |
+| `just install-cpp [prefix]` | Install the C/C++ SDK under a user-writable prefix |
+| `just clean` | Remove all generated artifacts |
+
+## Repository layout
+
+```text
 .
-├── src/
-│   └── my_c_wrapper/       # The source for the Python package layer
-│       ├── __init__.py
-│       ├── lib/              # The compiled C library is copied here for packaging
-│       ├── stubs.py          # Auto-generated stubs for the C library
-│       └── wrapper.py        # High-level Python wrapper over the C library
-├── c_lib/                  # The shared, core C library
-├── cpp_wrapper/            # A C++ wrapper (static library) for use by C++ applications
-├── main.cpp                # Demonstrates consuming the C++ layer
-├── main.py                 # Demonstrates consuming the Python layer
-├── CMakeLists.txt          # Build script for both C++ and Python workflows
-├── justfile                # Automation script for common tasks
-├── MANIFEST.in             # Config file telling setuptools which non-Python files to include
-├── pyproject.toml          # Python packaging configuration
-└── .gitignore
+├── bindings/bindings.toml       binding, ownership, ABI, and callback policy
+├── c_lib/
+│   ├── c_lib.h                  public C ABI (source of truth)
+│   └── c_lib.c                  core implementation
+├── cpp_wrapper/
+│   ├── cpp_wrapper.h            public C++17 API
+│   └── cpp_wrapper.cpp
+├── src/my_c_wrapper/
+│   ├── wrapper.py               handwritten Python API
+│   ├── __init__.py              package exports
+│   ├── _loader.py               native-library discovery
+│   ├── _ctypes.py               generated — do not edit
+│   └── lib/                     copied native library — do not commit
+├── tools/
+│   ├── bindings/                API extraction, code generation, ABI probe
+│   └── native_build_backend/    PEP 517 backend for platform wheels
+├── tests/
+│   ├── c/test_c_api.c           C API tests (CTest)
+│   ├── cpp/test_cpp_wrapper.cpp C++ tests (GoogleTest/CTest)
+│   ├── python/test_wrapper.py   Python public-API tests (pytest)
+│   └── consumer/                external find_package consumer test
+├── docs/
+│   ├── agent-playbook.md
+│   ├── python-bindings.md
+│   ├── abi-policy.md
+│   └── file-map.md              purpose of every tracked file
+├── CMakeLists.txt
+├── CMakePresets.json
+├── pyproject.toml
+├── main.cpp                     C++ consumer demo
+├── main.py                      Python consumer demo
+└── justfile
 ```
 
-## Using the `justfile` (Recommended Workflow)
+## Binding pipeline
 
-This project includes a `justfile` to automate common development tasks. `just` is a modern command runner that provides a simpler alternative to `make`.
-
-### 1. Install `just`
-
-If you don't have it, you'll need to install it once.
-
-**On macOS (using Homebrew):**
-
-```bash
-brew install just
+```text
+c_lib/c_lib.h + bindings/bindings.toml
+             |
+        Clang JSON AST
+             |
+             v
+   build/bindings/api.json          ← normalized C facts
+             |
+     ctypes code generator
+             |
+             v
+  src/my_c_wrapper/_ctypes.py       ← generated, do not edit
+             |
+             v
+  src/my_c_wrapper/wrapper.py       ← handwritten Python API
 ```
 
-**On other systems:**
-Follow the installation instructions in the [official `just` repository](https://github.com/casey/just).
+`bindings/bindings.toml` records decisions C syntax cannot express: which
+symbols form the Python surface, ownership of returned pointers, array
+pointer/count pairs, callback lifetimes, and records requiring ABI checks.
+`just check` compiles a C probe to verify that generated `ctypes` sizes,
+alignments, and field offsets match the compiler's view.
 
-### 2. Common Commands
+## Extending the template
 
-Run these from the project's root directory.
+For any new public operation, update the full vertical slice:
 
-- **List all available commands:**
+1. Declare it in `c_lib/c_lib.h`.
+2. Implement it in `c_lib/c_lib.c`.
+3. Add it to `bindings/bindings.toml` if it belongs in Python.
+4. Expose an idiomatic C++ operation in `cpp_wrapper/`.
+5. Expose a Python operation in `wrapper.py` and export from `__init__.py`.
+6. Add tests in `tests/c/`, `tests/cpp/`, and `tests/python/`.
+7. Run `just check`; run `just package-smoke` when packaging changes.
 
-  ```bash
-  just --list
-  ```
+Prefer opaque C handles with explicit create/destroy for owned resources, RAII
+in C++, and `close()`/context managers in Python.
 
-- **Build all C/C++ components:**
+## Agentic development
 
-  ```bash
-  just build
-  ```
+[`AGENTS.md`](AGENTS.md) and the nested `AGENTS.md` files in each directory
+are the canonical instructions for any agent. They cover architecture, rules,
+commands, and change recipes.
 
-- **Prepare the entire project for Python packaging (builds C++ and generates stubs):**
+Tool-specific entry points defer to `AGENTS.md` rather than duplicating it:
+[`CLAUDE.md`](CLAUDE.md) for Claude Code and
+[`.github/copilot-instructions.md`](.github/copilot-instructions.md) for
+GitHub Copilot. Add equivalent thin shims for other tools as needed.
 
-  ```bash
-  just prepare-python
-  ```
-
-- **Run the C++ demo:**
-
-  ```bash
-  just test-cpp
-  ```
-
-- **Run the Python demo (after `pip install .`):**
-
-  ```bash
-  just test-py
-  ```
-
-- **Install C++ libraries to the system (e.g., /usr/local):**
-
-  ```bash
-  just install-cpp
-  ```
-
-- **Uninstall C++ libraries from the system:**
-
-  ```bash
-  just uninstall-cpp
-  ```
-
-- **Uninstall the Python package from your Python environment:**
-
-  ```bash
-  just uninstall-py
-  ```
-
-- **Clean up all local generated files and directories:**
-
-  ```bash
-  just clean
-  ```
-
----
-
-## Manual Workflow 1: Using the C++ Layer
-
-This workflow builds and installs the C and C++ libraries so other C++ projects can find and link against them.
-
-### 1. Prerequisites
-
-- A C++ compiler (GCC or Clang)
-- CMake (version 3.12+)
-
-### 2. Build and Install
-
-```bash
-# Configure the build
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-
-# Build the libraries and the C++ demo executable
-cmake --build build
-
-# (Optional) Run the C++ demo to test the wrapper
-./build/bin/cpp_demo
-
-# Install headers and libraries to a system path (e.g., /usr/local)
-# You may need sudo for this step. If you wish to install locally instead,
-# please refer to CMake docs.
-sudo cmake --install build
-```
-
-This installs the shared library `libc_lib.so`, the static library `libcpp_wrapper.a`, and places the public headers into a namespaced directory (e.g., `/usr/local/include/my_project/`) for other C++ projects to consume.
-
----
-
-## Manual Workflow 2: Using the Python Layer
-
-This workflow builds a self-contained Python package that bundles the required C library. It does **not** require a system-wide C++ installation.
-
-### 1. Prerequisites
-
-- A C++ compiler, CMake (3.12+), Python 3
-- `ctypesgen` (install once for development: `pip install ctypesgen`)
-
-### 2. Build C Library & Prepare Python Source Tree
-
-This command compiles the core C library and automatically copies it into the Python source directory (`src/my_c_wrapper/lib/`).
-
-```bash
-cmake -S . -B build
-cmake --build build
-```
-
-### 3. Generate Python Stubs
-
-This command parses the C header and generates the low-level `stubs.py` file. The `-L` flag (to add a library search path) and the `--library` flag (to specify which library to load) are both crucial for the stubs to work correctly.
-
-```bash
-ctypesgen c_lib/c_lib.h -L ./build/lib --library c_lib -o src/my_c_wrapper/stubs.py
-```
-
-> **Note:** You may see harmless `ERROR: ... Syntax error` messages. As long as the command finishes with "Wrapping complete", it has succeeded. If you encounter other problems after this, consider going through ongoing issues in ctypesgen repository.
-
-### 4. Install the Python Package
-
-Build and install the Python package using `pip`. This command automatically reads `MANIFEST.in` to find and bundle the C library into the final package.
-
-```bash
-pip install .
-```
-
-### 5. Run the Python Demo
-
-Now you can use the installed package in any Python script, from any directory.
-
-```bash
-python3 main.py
-```
-
-Warning: Parts of this code were generated using Gemini 2.5 Pro.
+See [`docs/agent-playbook.md`](docs/agent-playbook.md) for architecture
+diagrams and [`docs/python-bindings.md`](docs/python-bindings.md) for the
+binding design.

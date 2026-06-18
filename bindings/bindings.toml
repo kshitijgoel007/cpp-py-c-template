@@ -1,0 +1,35 @@
+# Source-controlled policy for the generated Python bindings.
+#
+# C declarations remain the source of truth. This file records decisions that
+# cannot be inferred safely from C syntax, such as ownership and the intended
+# public binding surface.
+
+[headers]
+include = ["c_lib/c_lib.h"]
+
+[symbols]
+include = [
+    "checked_add",
+    "accumulator_create",
+    "accumulator_destroy",
+    "accumulator_add",
+    "accumulator_total",
+    "core_abi_version",
+    "core_version_string",
+]
+exclude = []
+
+[abi]
+# Scalar types are checked even before the API contains public structures.
+scalars = ["int", "void *"]
+records = []
+
+[ownership]
+accumulator_create = "owned:accumulator_destroy"
+
+[arrays]
+# Add per-function pointer/count relationships when array arguments enter the
+# API. The high-level Python wrapper should consume these policies.
+
+[callbacks]
+# Add callback lifetime policies before exposing callback-taking functions.

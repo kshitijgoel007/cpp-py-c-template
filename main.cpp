@@ -1,16 +1,21 @@
 #include "cpp_wrapper.h"
 #include <iostream>
+#include <utility>
 
 int main()
 {
   std::cout << "[C++] C++ Executable Demo" << std::endl;
-  std::cout << "[C++] Creating Calculator object from C++ code." << std::endl;
   Calculator calc;
-  int a = 100;
-  int b = 23;
-  std::cout << "[C++] Calling calc.add(" << a << ", " << b << ")" << std::endl;
-  int result = calc.add(a, b);
-  std::cout << "[C++] Result: " << result << std::endl;
+  std::int64_t a = 100;
+  std::int64_t b = 23;
+  std::int64_t result = calc.add(a, b);
+  std::cout << "[C++] " << a << " + " << b << " = " << result << std::endl;
+
+  Accumulator accumulator(10);
+  accumulator.add(5);
+  accumulator.add(-2);
+  Accumulator moved = std::move(accumulator);
+  std::cout << "[C++] Moved accumulator total: " << moved.total() << std::endl;
   std::cout << "[C++] C++ Executable Finished" << std::endl;
   return 0;
 }

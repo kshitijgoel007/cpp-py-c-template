@@ -6,13 +6,19 @@ build/
 [Bb]uild/
 
 # CMake specific files
-[Cc]make*/
+CMakeFiles/
 CMakeCache.txt
 *.cmake
+# Exclude source cmake directories from the *.cmake rule above
+!cmake/
+!tests/cmake/
 
 # Python Packaging artifacts
 dist/
 *.egg-info/
+.coverage
+coverage.xml
+htmlcov/
 
 # ==============================================================================
 # Compiled files and libraries
@@ -42,12 +48,13 @@ venv/
 .venv/
 env/
 .env
+.copier-answers.yml
 
 # ==============================================================================
 # Project-specific generated files
 # ==============================================================================
-# Auto-generated stubs from ctypesgen
-src/my_c_wrapper/stubs.py
+# Auto-generated binding and metadata
+src/my_c_wrapper/_ctypes.py
 
 # ==============================================================================
 # OS and IDE files
