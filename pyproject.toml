@@ -5,7 +5,7 @@ backend-path = ["tools"]
 
 [project]
 name = "my_c_wrapper"
-version = "0.3.1"
+version = "2026.6.0"
 requires-python = ">=3.11"
 description = "A minimal example of a Python wrapper over a C library."
 readme = "README.md"
@@ -73,6 +73,7 @@ test-command = "python -c \"import my_c_wrapper; assert my_c_wrapper.add(20, 22)
 skip = "*-musllinux_*"
 
 [tool.cibuildwheel.linux]
+before-all = "yum install -y clang || dnf install -y clang"
 repair-wheel-command = "auditwheel repair -w {dest_dir} {wheel}"
 
 [tool.cibuildwheel.macos]
@@ -85,11 +86,14 @@ repair-wheel-command = "delvewheel repair -w {dest_dir} {wheel}"
 name = "cz_conventional_commits"
 tag_format = "v$version"
 version_provider = "pep621"
+version_scheme = "pep440"
 update_changelog_on_bump = true
+# CalVer format: YYYY.M.MICRO (e.g. 2026.6.0)
+# Micro bump within the same month: cz bump --increment PATCH
+# New month release: cz bump --version 2026.7.0
+# After any bump, manually update C_CORE_VERSION_YEAR/MONTH/MICRO in c_lib/c_lib.h
 version_files = [
   "CMakeLists.txt:project\\(MyProject VERSION",
   "c_lib/c_lib.h:C_CORE_VERSION_STRING",
-  "c_lib/c_lib.h:C_CORE_VERSION_MAJOR",
-  "c_lib/c_lib.h:C_CORE_VERSION_MINOR",
-  "c_lib/c_lib.h:C_CORE_VERSION_PATCH",
+  "tests/python/test_wrapper.py:assert version\\(\\)",
 ]

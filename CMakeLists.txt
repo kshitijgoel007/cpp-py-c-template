@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.24)
-project(MyProject VERSION 0.3.1 LANGUAGES C CXX)
+project(MyProject VERSION 2026.6.0 LANGUAGES C CXX)
+
+# ABI version is separate from the CalVer package version. Bump this only
+# when making a backwards-incompatible change to the C ABI.
+set(C_CORE_ABI_VERSION 1)
 
 include(CTest)
 include(FetchContent)
@@ -68,8 +72,8 @@ add_library(c_lib SHARED c_lib/c_lib.c)
 add_library(MyProject::core ALIAS c_lib)
 set_target_properties(c_lib PROPERTIES
     EXPORT_NAME core
-    VERSION ${PROJECT_VERSION}
-    SOVERSION ${PROJECT_VERSION_MAJOR}
+    VERSION   ${PROJECT_VERSION}
+    SOVERSION ${C_CORE_ABI_VERSION}
     C_VISIBILITY_PRESET hidden
     VISIBILITY_INLINES_HIDDEN YES
     WINDOWS_EXPORT_ALL_SYMBOLS OFF

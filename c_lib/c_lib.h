@@ -15,10 +15,10 @@
 #define C_CORE_API
 #endif
 
-#define C_CORE_VERSION_MAJOR 0
-#define C_CORE_VERSION_MINOR 3
-#define C_CORE_VERSION_PATCH 1
-#define C_CORE_VERSION_STRING "0.3.1"
+#define C_CORE_VERSION_YEAR 2026
+#define C_CORE_VERSION_MONTH 6
+#define C_CORE_VERSION_MICRO 0
+#define C_CORE_VERSION_STRING "2026.6.0"
 #define C_CORE_ABI_VERSION 1u
 
 #ifdef __cplusplus

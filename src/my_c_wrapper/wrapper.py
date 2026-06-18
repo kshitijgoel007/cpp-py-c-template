@@ -15,7 +15,7 @@ def version():
     """Return the semantic version of the loaded C library."""
 
     value = _ctypes.core_version_string()
-    if value is None:
+    if value is None:  # pragma: no cover
         raise RuntimeError("the C library returned no version string")
     return value.decode("utf8")
 
@@ -41,7 +41,7 @@ def add(a, b):
     )
     if status == _ctypes.C_CORE_OVERFLOW:
         raise OverflowError("sum would overflow int64")
-    if status != _ctypes.C_CORE_OK:
+    if status != _ctypes.C_CORE_OK:  # pragma: no cover
         raise RuntimeError("the C library rejected the addition")
     return result.value
 
@@ -54,7 +54,7 @@ class Accumulator:
         self._handle = _ctypes.accumulator_create(
             _checked_integer(initial_value, bits=64, name="initial_value")
         )
-        if not self._handle:
+        if not self._handle:  # pragma: no cover
             raise MemoryError("the C library could not allocate an accumulator")
 
     @property
@@ -79,7 +79,7 @@ class Accumulator:
         )
         if status == _ctypes.C_CORE_OVERFLOW:
             raise OverflowError("accumulator total would overflow int64")
-        if status != _ctypes.C_CORE_OK:
+        if status != _ctypes.C_CORE_OK:  # pragma: no cover
             raise RuntimeError("the C library rejected the accumulator update")
         return total.value
 
@@ -89,7 +89,7 @@ class Accumulator:
 
         total = ctypes.c_int64()
         status = _ctypes.accumulator_total(self._require_open(), ctypes.byref(total))
-        if status != _ctypes.C_CORE_OK:
+        if status != _ctypes.C_CORE_OK:  # pragma: no cover
             raise RuntimeError("the C library could not read the accumulator")
         return total.value
 

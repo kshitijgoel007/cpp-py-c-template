@@ -1,10 +1,33 @@
 # Changelog
 
-All notable changes are documented here. This project follows Semantic
-Versioning for the public C++, Python, and source APIs. The C ABI has its own
-integer version exposed by `core_abi_version()`.
+All notable changes are documented here. This project uses Calendar Versioning
+(`YYYY.M.MICRO`). The C ABI has a separate integer version exposed by
+`core_abi_version()` and tracked as `C_CORE_ABI_VERSION` in `c_lib.h` and
+`C_CORE_ABI_VERSION` in `CMakeLists.txt`.
 
 ## [Unreleased]
+
+## [2026.6.0] - 2026-06-18
+
+### Added
+
+- New tests covering the library loader's env-override path, the all-candidates-missing
+  error path, and the virtualenv enforcement guard.
+
+### Changed
+
+- Switched from Semantic Versioning to Calendar Versioning (`YYYY.M.MICRO`).
+  `C_CORE_VERSION_MAJOR`/`MINOR`/`PATCH` macros in `c_lib.h` are renamed to
+  `C_CORE_VERSION_YEAR`/`MONTH`/`MICRO`. SOVERSION is now driven by
+  `C_CORE_ABI_VERSION` (an independent integer) rather than the CalVer year.
+- Wheels: removed Windows from the build matrix; added `before-all` to install
+  `clang` inside manylinux containers so `extract_api.py` can parse the C header.
+
+### Fixed
+
+- `# pragma: no cover` added to defensive C-library error guards in
+  `wrapper.py` that can only fire on a misbehaving native library, bringing
+  Python coverage above the 90 % threshold.
 
 ## [0.3.1] - 2026-06-18
 

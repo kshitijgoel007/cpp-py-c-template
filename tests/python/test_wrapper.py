@@ -1,12 +1,14 @@
 """Tests for the supported Python wrapper API."""
 
+import sys
+
 import pytest
 
 from my_c_wrapper import Accumulator, abi_version, add, version
 
 
 def test_loaded_library_version_matches_package():
-    assert version() == "0.3.1"
+    assert version() == "2026.6.0"
     assert abi_version() == 1
 
 
@@ -67,3 +69,31 @@ def test_accumulator_validates_int64_range():
     with Accumulator() as accumulator:
         with pytest.raises(OverflowError):
             accumulator.add(1 << 63)
+
+
+def test_loader_env_override_missing_file_falls_through(monkeypatch, tmp_path):
+    """MY_C_WRAPPER_LIBRARY pointing to a missing file falls through to other candidates."""
+    monkeypatch.setenv("MY_C_WRAPPER_LIBRARY", str(tmp_path / "nonexistent.so"))
+    from my_c_wrapper._loader import load_library
+
+    lib = load_library()
+    assert lib is not None
+
+
+def test_loader_raises_when_no_candidate_found(monkeypatch):
+    """load_library raises RuntimeError when all candidate paths are missing."""
+    from my_c_wrapper import _loader
+
+    monkeypatch.setattr(_loader, "LIBRARY_NAMES", {"_never_": ("no_such_lib.so",)})
+    monkeypatch.delenv("MY_C_WRAPPER_LIBRARY", raising=False)
+    with pytest.raises(RuntimeError, match="Unable to load"):
+        _loader.load_library()
+
+
+def test_environment_raises_outside_virtualenv(monkeypatch):
+    """require_virtualenv raises when sys.prefix matches the base prefix."""
+    monkeypatch.setattr(sys, "prefix", sys.base_prefix)
+    from my_c_wrapper._environment import require_virtualenv
+
+    with pytest.raises(RuntimeError, match="virtualenv"):
+        require_virtualenv()
